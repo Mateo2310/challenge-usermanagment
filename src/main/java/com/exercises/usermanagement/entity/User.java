@@ -3,8 +3,11 @@ package com.exercises.usermanagement.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +16,7 @@ import java.util.UUID;
 @Table(name = "users")
 @Getter
 @Setter
-public class User implements Serializable {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue()
@@ -54,12 +57,11 @@ public class User implements Serializable {
         this.lastLogin=new Date();
     }
 
-    public User(String name, String email, String password, List<Phone> phones, boolean isActive, Date updatedAt) {
+    public User(String name, String email, String password, List<Phone> phones) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.phones = phones;
-        this.isActive = isActive;
         this.updatedAt = new Date();
     }
 
@@ -70,5 +72,30 @@ public class User implements Serializable {
         if (id == null) {
             id = UUID.randomUUID();
         }
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
     }
 }

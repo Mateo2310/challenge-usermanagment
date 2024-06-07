@@ -27,22 +27,25 @@ public class UserServiceImpl implements IUserService {
     public ResponseSuccessDTO registerUser(UserRegistrationDTO userRegistrationDTO) {
         User userEntity = this.convertUserDTOToUser(userRegistrationDTO);
         User savedUser = this.iUserRepository.save(userEntity);
-        String createdAtString = this.dateToString(savedUser.getCreatedAt());
-        String updatedAtString = this.dateToString(savedUser.getUpdatedAt());
 
-        return new ResponseSuccessDTO(
-                userEntity.getId().toString(),
-                createdAtString,
-                updatedAtString,
-                updatedAtString,
-                "tokenTest",
-                userEntity.isActive()
-        );
+        return this.convertToResponseSuccessDTO(savedUser);
     }
 
     @Override
     public ResponseSuccessDTO updateUser(UserRegistrationDTO userRegistrationDTO) {
-        return null;
+        User user = this.iUserRepository.getUserByEmail(userRegistrationDTO.getEmail());
+        user.setName(userRegistrationDTO.getName());
+        user.setEmail(userRegistrationDTO.getEmail());
+        user.setPhones(this.iPhoneService.updatePhones(userRegistrationDTO.getPhones(), user.getPhones()));
+        user.setPassword(userRegistrationDTO.getPassword());
+        user.setUpdatedAt(new Date());
+        return this.convertToResponseSuccessDTO(this.iUserRepository.save(user));
+    }
+
+    @Override
+    public ResponseSuccessDTO getUser(String email) {
+        User user = this.iUserRepository.getUserByEmail(email);
+        return this.convertToResponseSuccessDTO(user);
     }
 
     private User convertUserDTOToUser(UserRegistrationDTO userRegistrationDTO) {
@@ -63,4 +66,20 @@ public class UserServiceImpl implements IUserService {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss");
         return sdf.format(dateToConvert);
     }
+
+    private ResponseSuccessDTO convertToResponseSuccessDTO(User user){
+        String createdAtString = this.dateToString(user.getCreatedAt());
+        String updatedAtString = this.dateToString(user.getUpdatedAt());
+
+        return new ResponseSuccessDTO(
+                user.getId().toString(),
+                createdAtString,
+                updatedAtString,
+                updatedAtString,
+                "tokenTest",
+                user.isActive()
+        );
+    }
+
+
 }
